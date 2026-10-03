@@ -9,7 +9,6 @@ import java.sql.SQLException;
 import java.util.List;
 
 public final class LoanDao {
-
     private final Dao<Loan, Integer> dao;
 
     public LoanDao(ConnectionSource connectionSource) throws SQLException {
