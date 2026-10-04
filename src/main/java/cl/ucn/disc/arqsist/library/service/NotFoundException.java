@@ -6,7 +6,7 @@ package cl.ucn.disc.arqsist.library.service;
 /**
  * clase extencion para enviarm mensajes de error
  */
-public class NotFoundException extends RuntimeException{
+public final class NotFoundException extends RuntimeException{
     /**
      * Constructor básico sin mensaje
      */
