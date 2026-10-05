@@ -3,30 +3,32 @@ package cl.ucn.disc.arqsist.library.service;
 import java.time.LocalDate;
 
 /**
- * politica de prestamo
+ * Politica de prestamo y tarifas.
  */
 public final class LoanPolicy {
+
     /**
-     * constructor
+     * Tiempo estandar de prestamo en dias.
+     */
+    public static final int DUE_DAYS = 21;
+
+    /**
+     * Tarifa de multa por dia de retraso.
+     */
+    public static final double FEE_PER_DAY = 1.0;
+
+    /**
+     * Constructor privado.
      */
     private LoanPolicy() {
     }
 
     /**
-     * caluculo de multa por dias de retraso
+     * Calcula la fecha de vencimiento del prestamo.
      * @param loanDate dia inicial del prestamo
-     * @return la fecha de entrega despues del maximo de prestamo
+     * @return la fecha de entrega limite
      */
-    public static LocalDate fine(LocalDate loanDate) {
-        return loanDate.plusDays(dueDate);
+    public static LocalDate dueDate(LocalDate loanDate) {
+        return loanDate.plusDays(DUE_DAYS);
     }
-
-    /**
-     * tiempo de prestamo
-     */
-    public static final int dueDate = 21;
-    /**
-     * multiplicador de multa de prestamo por dia,
-     */
-    public static final double dailyFine = 1.0;
 }
