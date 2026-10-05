@@ -60,5 +60,4 @@ public abstract class BaseDao<T> {
             throw new RuntimeException("Error deleting entity", e);
         }
     }
-
 }
