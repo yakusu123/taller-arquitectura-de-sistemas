@@ -1,0 +1,11 @@
+# AI Prompts — Stage 1
+
+| Prompt | Tool / Model | Files affected | Notes |
+|---|---|---|---|
+| ¿Para qué sirve el método transaction en BaseDao si ya implementé el CRUD genérico? | Gemini 3.7 Flash (Thinking / Medium) | `src/main/java/.../dao/BaseDao.java` | Clarificación conceptual del método `transaction(Callable<R>)` con `TransactionManager.callInTransaction` y unwrap de excepciones según Sección 2.6. |
+| ¿Cómo funciona BaseDataType en ORMLite para convertir LocalDate a texto en la base de datos? | Gemini 3.7 Flash (Thinking / Medium) | `src/main/java/.../db/LocalDatePersister.java` | Explicación del ciclo de vida de `sqlArgToJava` y `javaToSqlArg` para persistir fechas ISO-8601. Clase implementada manualmente por el estudiante con patrón Singleton. |
+| ¿Por qué LoanPolicy debe ser una clase utilitaria separada con constructor privado? | Gemini 3.7 Flash (Thinking / Medium) | `src/main/java/.../service/LoanPolicy.java` | Consulta sobre centralización de la regla de negocio de días (`DUE_DAYS = 21`) y tarifa diaria (`FEE_PER_DAY = 1.0`). |
+| Tengo error de tipos al crear el préstamo en ReservationService.fulfill, ¿cómo se encadena con LoanPolicy? | Gemini 3.7 Flash (Thinking / Medium) | `src/main/java/.../service/ReservationService.java` | Corrección del error sintáctico al llamar a `LoanPolicy.dueDate(today)` y pase de instancias `LocalDate`. |
+| Si borré isOverdue de Loan, ¿cómo filtro ahora los préstamos vencidos en LoanService? | Gemini 3.7 Flash (Thinking / Medium) | `src/main/java/.../service/LoanService.java` | Adaptación del método `overdueLoans()` para filtrar inline mediante lambda comparando contra `LocalDate.now()`. |
+| ¿Cómo deben quedar distribuidos los datos de prueba en Database.seedIfEmpty? | Gemini 3.7 Flash (Thinking / Medium) | `src/main/java/.../db/Database.java` | Guía de distribución para Cambio 10 (3 miembros, 1 reserva, 3 préstamos variados) y configuración del logger SLF4J `log.debug()`. |
+| Genera el diagrama de clases PlantUML actualizado | Gemini 3.7 Flash (Thinking / Medium) | `docs/class-diagram.puml` | Generación del código PlantUML que refleja la nueva jerarquía de `BaseDao`, `LoanPolicy`, `LocalDatePersister` y tipos `LocalDate`. |
