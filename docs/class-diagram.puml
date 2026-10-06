@@ -1,9 +1,8 @@
 @startuml
-' Library monolith — class diagram
+' Library monolith — class diagram Stage 1
 ' Layered: controller -> service -> dao -> model (persistence via ORMLite)
 
 skin rose
-' left to right direction
 
 skinparam package<<controller>> {
   BackgroundColor #FCE4EC
@@ -52,6 +51,19 @@ package "controller" <<controller>> {
 }
 
 package "service" <<service>> {
+  class LoanPolicy {
+    + {static} DUE_DAYS : int = 21
+    + {static} FEE_PER_DAY : double = 1.0
+    - LoanPolicy()
+    + {static} dueDate(LocalDate) : LocalDate
+  }
+
+  class NotFoundException {
+    + NotFoundException()
+    + NotFoundException(String)
+    + NotFoundException(String, Throwable)
+  }
+
   class BookService {
     - BookDao dao
     + listAll() : List<Book>
@@ -62,7 +74,6 @@ package "service" <<service>> {
   }
 
   class LoanService {
-    - {static} int DUE_DAYS = 21
     - LoanDao loanDao
     - BookDao bookDao
     + findAll() : List<Loan>
@@ -91,37 +102,31 @@ package "service" <<service>> {
 }
 
 package "dao" <<dao>> {
-  class BookDao {
-    - Dao<Book, Integer> dao
-    + findAll() : List<Book>
-    + findById(int) : Book
-    + create(Book) : void
-    + update(Book) : void
-    + delete(Book) : void
+  abstract class BaseDao<T> {
+    # Dao<T, Integer> dao
+    # BaseDao(ConnectionSource, Class<T>)
+    + findAll() : List<T>
+    + findById(Integer) : T
+    + create(T) : void
+    + update(T) : void
+    + delete(T) : void
+    + transaction(Callable<R>) : R
   }
 
-  class MemberDao {
-    - Dao<Member, Integer> dao
-    + findAll() : List<Member>
-    + findById(int) : Member
-    + create(Member) : void
-    + update(Member) : void
+  class BookDao extends BaseDao {
+    + BookDao(ConnectionSource)
   }
 
-  class LoanDao {
-    - Dao<Loan, Integer> dao
-    + findAll() : List<Loan>
-    + findById(int) : Loan
-    + create(Loan) : void
-    + update(Loan) : void
+  class MemberDao extends BaseDao {
+    + MemberDao(ConnectionSource)
   }
 
-  class ReservationDao {
-    - Dao<Reservation, Integer> dao
-    + findAll() : List<Reservation>
-    + findById(int) : Reservation
-    + create(Reservation) : void
-    + update(Reservation) : void
+  class LoanDao extends BaseDao {
+    + LoanDao(ConnectionSource)
+  }
+
+  class ReservationDao extends BaseDao {
+    + ReservationDao(ConnectionSource)
   }
 }
 
@@ -167,25 +172,25 @@ package "model" <<model>> {
     - int id
     - Member member
     - Book book
-    - String loanDate
-    - String dueDate
-    - String returnDate
+    - LocalDate loanDate
+    - LocalDate dueDate
+    - LocalDate returnDate
     - boolean returned
     - double overdueFee
     + Loan()
-    + Loan(Member, Book, String, String)
+    + Loan(Member, Book, LocalDate, LocalDate)
     + getId() : int
     + setId(int) : void
     + getMember() : Member
     + setMember(Member) : void
     + getBook() : Book
     + setBook(Book) : void
-    + getLoanDate() : String
-    + setLoanDate(String) : void
-    + getDueDate() : String
-    + setDueDate(String) : void
-    + getReturnDate() : String
-    + setReturnDate(String) : void
+    + getLoanDate() : LocalDate
+    + setLoanDate(LocalDate) : void
+    + getDueDate() : LocalDate
+    + setDueDate(LocalDate) : void
+    + getReturnDate() : LocalDate
+    + setReturnDate(LocalDate) : void
     + isReturned() : boolean
     + setReturned(boolean) : void
     + getOverdueFee() : double
@@ -196,18 +201,18 @@ package "model" <<model>> {
     - int id
     - Member member
     - Book book
-    - String reservedAt
+    - LocalDate reservedAt
     - boolean fulfilled
     + Reservation()
-    + Reservation(Member, Book, String)
+    + Reservation(Member, Book, LocalDate)
     + getId() : int
     + setId(int) : void
     + getMember() : Member
     + setMember(Member) : void
     + getBook() : Book
     + setBook(Book) : void
-    + getReservedAt() : String
-    + setReservedAt(String) : void
+    + getReservedAt() : LocalDate
+    + setReservedAt(LocalDate) : void
     + isFulfilled() : boolean
     + setFulfilled(boolean) : void
   }
@@ -215,9 +220,21 @@ package "model" <<model>> {
 
 package "db" <<db>> {
   class Database {
+    - {static} Logger log
     - ConnectionSource connectionSource
+    + Database(String)
     + connectionSource() : ConnectionSource
     + seedIfEmpty() : void
+  }
+
+  class LocalDatePersister {
+    - {static} LocalDatePersister SINGLETON
+    - LocalDatePersister()
+    + {static} getSingleton() : LocalDatePersister
+    + parseDefaultString(FieldType, String) : Object
+    + resultToSqlArg(FieldType, DatabaseResults, int) : Object
+    + sqlArgToJava(FieldType, Object, int) : Object
+    + javaToSqlArg(FieldType, Object) : Object
   }
 }
 
@@ -229,32 +246,35 @@ LoanController "1" --> "1" LoanService
 MemberController "1" --> "1" MemberService
 ReservationController "1" --> "1" ReservationService
 
-' ----- service -> dao -----
+' ----- service -> dao & policy -----
 BookService "1" --> "1" BookDao
 LoanService "1" --> "1" LoanDao
 LoanService "1" --> "1" BookDao
+LoanService ..> LoanPolicy : uses
 MemberService "1" --> "1" MemberDao
 MemberService "1" --> "1" BookDao
 MemberService "1" --> "1" LoanDao
+MemberService ..> LoanPolicy : uses
 ReservationService "1" --> "1" ReservationDao
 ReservationService "1" --> "1" BookDao
 ReservationService "1" --> "1" MemberDao
 ReservationService "1" --> "1" LoanDao
+ReservationService ..> LoanPolicy : uses
 
 ' ----- dao -> model / db -----
+BaseDao "1" --> "0..*" Object
+BaseDao "1" ..> "1" Database
 BookDao "1" --> "0..*" Book
 MemberDao "1" --> "0..*" Member
 LoanDao "1" --> "0..*" Loan
 ReservationDao "1" --> "0..*" Reservation
-BookDao "1" ..> "1" Database
-MemberDao "1" ..> "1" Database
-LoanDao "1" ..> "1" Database
-ReservationDao "1" ..> "1" Database
 
-' ----- model relationships -----
+' ----- model relationships & persister -----
 Loan "0..*" --> "1" Member
 Loan "0..*" --> "1" Book
+Loan ..> LocalDatePersister : uses
 Reservation "0..*" --> "1" Member
 Reservation "0..*" --> "1" Book
+Reservation ..> LocalDatePersister : uses
 
 @enduml

@@ -1,6 +1,7 @@
 const esc = (s) => (s ?? '').toString().replace(/[&<>"]/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]
 ));
+const isOverdue = (l) => !l.returned && l.dueDate && new Date(l.dueDate) < new Date();
 
 class Api {
     static async request(path, options = {}) {
@@ -145,13 +146,13 @@ class LibraryApp {
                     <td>${esc(l.book?.title)}</td>
                     <td>${esc(l.member?.name)}</td>
                     <td>${esc(l.dueDate)}</td>
-                    <td>${l.returned
-                        ? '<span class="tag is-success is-light">Returned</span>'
-                        : l.overdue
-                            ? '<span class="tag is-danger is-light">Overdue</span>'
-                            : '<span class="tag is-warning is-light">On loan</span>'}</td>
+                        <td>${l.returned
+                            ? '<span class="tag is-success is-light">Returned</span>'
+                            : isOverdue(l)
+                                ? '<span class="tag is-danger is-light">Overdue</span>'
+                                : '<span class="tag is-warning is-light">On loan</span>'}</td>
                     <td>${l.overdueFee > 0
-                        ? `<span class="has-text-danger has-text-weight-semibold">$${l.overdueFee.toFixed(2)}</span>`
+                        ? '<span class="has-text-danger has-text-weight-semibold">$${l.overdueFee.toFixed(2)}</span>'
                         : '<span class="has-text-grey">$0.00</span>'}</td>
                     <td>${l.returned ? '' : `<button class="button is-small is-success is-light" data-action="return" data-id="${l.id}"><span class="icon is-small"><i class="fas fa-check"></i></span><span>Return</span></button>`}</td>
                 </tr>`).join('')
@@ -191,7 +192,7 @@ class LibraryApp {
         document.getElementById('stat-books').textContent = this.books.length;
         document.getElementById('stat-members').textContent = this.members.length;
         document.getElementById('stat-loans').textContent = this.loans.filter((l) => !l.returned).length;
-        document.getElementById('stat-overdue').textContent = this.loans.filter((l) => l.overdue).length;
+        document.getElementById('stat-overdue').textContent = this.loans.filter((l) => isOverdue(l)).length;
     }
 
     emptyRow(colspan, message) {

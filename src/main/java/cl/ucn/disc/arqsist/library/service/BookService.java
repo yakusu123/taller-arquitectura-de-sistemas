@@ -30,12 +30,18 @@ public final class BookService {
 
     public void borrow(int bookId) throws SQLException {
         Book book = dao.findById(bookId);
+        if (book.getAvailableCopies() <= 0) {
+            throw new IllegalStateException("No available copies to borrow");
+        }
         book.setAvailableCopies(book.getAvailableCopies() - 1);
         dao.update(book);
     }
 
     public void returnCopy(int bookId) throws SQLException {
         Book book = dao.findById(bookId);
+        if (book.getAvailableCopies() >= book.getTotalCopies()) {
+            throw new IllegalStateException("All copies are already returned");
+        }
         book.setAvailableCopies(book.getAvailableCopies() + 1);
         dao.update(book);
     }
