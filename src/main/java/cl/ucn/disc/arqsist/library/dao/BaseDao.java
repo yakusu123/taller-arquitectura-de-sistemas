@@ -5,10 +5,12 @@
 package cl.ucn.disc.arqsist.library.dao;
 
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.misc.TransactionManager;
 import com.j256.ormlite.support.ConnectionSource;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 public abstract class BaseDao<T> {
     protected final Dao<T, Integer> dao;
@@ -58,6 +60,18 @@ public abstract class BaseDao<T> {
             dao.delete(entity);
         } catch (Exception e) {
             throw new RuntimeException("Error deleting entity", e);
+        }
+    }
+    public <R> R transaction(Callable<R> callable) throws SQLException {
+        try {
+            return TransactionManager.callInTransaction(dao.getConnectionSource(), callable);
+        } catch (SQLException e) {
+            throw e;
+        } catch (Exception e) {
+            if (e instanceof RuntimeException re) {
+                throw re;
+            }
+            throw new RuntimeException(e);
         }
     }
 }

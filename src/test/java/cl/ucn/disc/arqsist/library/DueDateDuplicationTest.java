@@ -50,4 +50,5 @@ class DueDateDuplicationTest {
         assertEquals(fromCheckout.getDueDate(), fromFulfill.getDueDate(),
                 "the same kind of loan should have the same due date");
     }
+    
 }
