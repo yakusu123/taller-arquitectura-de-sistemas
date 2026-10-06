@@ -5,6 +5,7 @@
         </encoder>
     </appender>
 
+    <logger name="cl.ucn.disc" level="DEBUG"/>
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
