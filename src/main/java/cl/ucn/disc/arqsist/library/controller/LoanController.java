@@ -1,16 +1,22 @@
+/*
+ * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
+ */
+
 package cl.ucn.disc.arqsist.library.controller;
 
 import cl.ucn.disc.arqsist.library.service.LoanService;
-import cl.ucn.disc.arqsist.library.service.MemberService;
 import io.javalin.config.JavalinConfig;
 
 import java.util.Objects;
 
+/**
+ * Controlador HTTP para operaciones de prestamos.
+ */
 public final class LoanController {
 
     private final LoanService loanService;
 
-    public LoanController(MemberService memberService, LoanService loanService) {
+    public LoanController(LoanService loanService) {
         this.loanService = loanService;
     }
 

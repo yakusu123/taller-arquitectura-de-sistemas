@@ -1,15 +1,21 @@
+/*
+ * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
+ */
+
 package cl.ucn.disc.arqsist.library.controller;
 
-import cl.ucn.disc.arqsist.library.dao.BookDao;
 import cl.ucn.disc.arqsist.library.model.Book;
 import cl.ucn.disc.arqsist.library.service.BookService;
 import io.javalin.config.JavalinConfig;
 
+/**
+ * Controlador HTTP para operaciones con libros.
+ */
 public final class BookController {
 
     private final BookService service;
 
-    public BookController(BookService service, BookDao dao) {
+    public BookController(BookService service) {
         this.service = service;
     }
 

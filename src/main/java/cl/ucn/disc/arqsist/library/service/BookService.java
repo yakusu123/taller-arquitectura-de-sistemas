@@ -1,11 +1,17 @@
+/*
+ * Copyright (c) 2026. Arquitectura de Sistemas, DISC, UCN, Antofagasta.
+ */
+
 package cl.ucn.disc.arqsist.library.service;
 
 import cl.ucn.disc.arqsist.library.dao.BookDao;
 import cl.ucn.disc.arqsist.library.model.Book;
 
-import java.sql.SQLException;
 import java.util.List;
 
+/**
+ * Servicio encargado de la gestion de libros y control de inventario.
+ */
 public final class BookService {
 
     private final BookDao dao;
@@ -14,21 +20,21 @@ public final class BookService {
         this.dao = dao;
     }
 
-    public List<Book> listAll() throws SQLException {
+    public List<Book> listAll() {
         return dao.findAll();
     }
 
-    public Book findById(int id) throws SQLException {
+    public Book findById(int id) {
         return dao.findById(id);
     }
 
-    public Book create(Book book) throws SQLException {
+    public Book create(Book book) {
         book.setAvailableCopies(book.getTotalCopies());
         dao.create(book);
         return book;
     }
 
-    public void borrow(int bookId) throws SQLException {
+    public void borrow(int bookId) {
         Book book = dao.findById(bookId);
         if (book.getAvailableCopies() <= 0) {
             throw new IllegalStateException("No available copies to borrow");
@@ -37,7 +43,7 @@ public final class BookService {
         dao.update(book);
     }
 
-    public void returnCopy(int bookId) throws SQLException {
+    public void returnCopy(int bookId) {
         Book book = dao.findById(bookId);
         if (book.getAvailableCopies() >= book.getTotalCopies()) {
             throw new IllegalStateException("All copies are already returned");
