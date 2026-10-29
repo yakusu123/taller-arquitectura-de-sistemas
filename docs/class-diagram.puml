@@ -1,5 +1,5 @@
 @startuml
-' Library monolith — class diagram Stage 1
+' Library monolith — class diagram Stage 2
 ' Layered: controller -> service -> dao -> model (persistence via ORMLite)
 
 skin rose
@@ -29,12 +29,10 @@ hide stereotype
 package "controller" <<controller>> {
   class BookController {
     - BookService service
-    - BookDao dao
     + register(JavalinConfig) : void
   }
 
   class LoanController {
-    - MemberService memberService
     - LoanService loanService
     + register(JavalinConfig) : void
   }
@@ -73,28 +71,32 @@ package "service" <<service>> {
     + returnCopy(int) : void
   }
 
-  class LoanService {
-    - LoanDao loanDao
-    - BookDao bookDao
-    + findAll() : List<Loan>
-    + returnLoan(int) : Loan
-    + overdueLoans() : List<Loan>
-  }
-
   class MemberService {
     - MemberDao memberDao
-    - BookDao bookDao
-    - LoanDao loanDao
     + register(Member) : Member
     + findAll() : List<Member>
+  }
+
+  class LoanService {
+    - LoanDao loanDao
+    - MemberDao memberDao
+    - BookService bookService
+    - Clock clock
     + checkout(int, int) : Loan
+    + returnLoan(int) : Loan
+    + accruedFee(Loan) : double
+    + withAccruedFees(Loan) : Loan
+    + withAccruedFees(List<Loan>) : List<Loan>
+    + findAll() : List<Loan>
+    + overdueLoans() : List<Loan>
   }
 
   class ReservationService {
     - ReservationDao reservationDao
-    - BookDao bookDao
     - MemberDao memberDao
     - LoanDao loanDao
+    - BookService bookService
+    - Clock clock
     + reserve(int, int) : Reservation
     + findAll() : List<Reservation>
     + fulfill(int) : Loan
@@ -238,27 +240,26 @@ package "db" <<db>> {
   }
 }
 
-' ----- controller -> service -----
+' ----- controller -> service (desacoplados, 1 a 1) -----
 BookController "1" --> "1" BookService
-BookController "1" --> "1" BookDao
-LoanController "1" --> "1" MemberService
 LoanController "1" --> "1" LoanService
 MemberController "1" --> "1" MemberService
 ReservationController "1" --> "1" ReservationService
 
-' ----- service -> dao & policy -----
+' ----- service -> service & dao -----
 BookService "1" --> "1" BookDao
-LoanService "1" --> "1" LoanDao
-LoanService "1" --> "1" BookDao
-LoanService ..> LoanPolicy : uses
+
 MemberService "1" --> "1" MemberDao
-MemberService "1" --> "1" BookDao
-MemberService "1" --> "1" LoanDao
-MemberService ..> LoanPolicy : uses
+
+LoanService "1" --> "1" LoanDao
+LoanService "1" --> "1" MemberDao
+LoanService "1" --> "1" BookService
+LoanService ..> LoanPolicy : uses
+
 ReservationService "1" --> "1" ReservationDao
-ReservationService "1" --> "1" BookDao
 ReservationService "1" --> "1" MemberDao
 ReservationService "1" --> "1" LoanDao
+ReservationService "1" --> "1" BookService
 ReservationService ..> LoanPolicy : uses
 
 ' ----- dao -> model / db -----
