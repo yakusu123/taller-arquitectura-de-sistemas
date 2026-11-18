@@ -18,4 +18,12 @@ public final class MemberService {
     public List<Member> findAll() {
         return memberDao.findAll();
     }
+    public Member findById(int id) {
+        // ORMLite returns null when the row does not exist.
+        Member member = memberDao.findById(id);
+        if (member == null) {
+            throw new NotFoundException("Member not found: " + id);
+        }
+        return member;
+    }
 }
