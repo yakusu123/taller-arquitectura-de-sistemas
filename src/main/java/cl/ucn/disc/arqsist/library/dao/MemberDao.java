@@ -14,7 +14,7 @@ public final class MemberDao extends BaseDao<Member> {
             return dao.queryBuilder()
                     .orderBy("id", true)
                     .where()
-                    .raw("instr(lower(name), lower(?)) > 0", new SelectArg(query))
+                    .raw("instr(lower(name), lower(?)) > 0", new SelectArg("name", query))
                     .query();
         } catch (Exception e) {
             throw new RuntimeException("Error searching members by name", e);
